@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thảo luận về Ám Sợ Chuyên Biệt</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f8bbd0, #f3e5f5);
+      padding: 1rem;
+      color: #4a148c;
+    }
+    .admin-banner {
+      background: #fce4ec;
+      padding: 12px;
+      border-left: 6px solid #ce93d8;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    h1 {
+      text-align: center;
+      color: #6a1b9a;
+    }
+    input, textarea {
+      width: 100%;
+      max-width: 600px;
+      padding: 8px;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: 1px solid #ce93d8;
+      background-color: #ffffff;
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.05);
+    }
+    button {
+      padding: 8px 14px;
+      margin: 4px;
+      border: none;
+      background-color: #ba68c8;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #ab47bc;
+    }
+    .comment-section {
+      margin-top: 2rem;
+    }
+    .comment {
+      background-color: #ffffff;
+      border-left: 5px solid #ba68c8;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      box-shadow: 1px 1px 5px rgba(0,0,0,0.05);
+    }
+    .reply {
+      margin-left: 30px;
+      border-left: 3px dashed #ce93d8;
+      padding-left: 10px;
+      margin-top: 8px;
+    }
+    .comment-footer button {
+      background: #f3e5f5;
+      color: #6a1b9a;
+    }
+    .comment-footer button:hover {
+      background: #e1bee7;
+    }
+    .pinned {
+      border-left: 5px solid #ffca28;
+      background: #fff8e1;
+    }
+    .toggle-section {
+      margin: 20px 0;
+      padding: 10px;
+      background: #fce4ec;
+      border-radius: 8px;
+    }
+    .toggle-section h3 {
+      cursor: pointer;
+      color: #ad1457;
+    }
+    .toggle-content {
+      display: none;
+      margin-top: 10px;
+    }
+    .toggle-content img {
+      max-width: 100%;
+      border-radius: 6px;
+    }
+    .reference-links ul {
+      padding-left: 20px;
+    }
+    .sort-options {
+      margin-top: 1rem;
+    }
+    .sort-options label {
+      font-weight: bold;
+      color: #6a1b9a;
+    }
+    select {
+      border-radius: 6px;
+      padding: 6px;
+      border: 1px solid #ce93d8;
+    }
+    .timestamp {
+      font-size: 0.8em;
+      color: #888;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-banner">
+    📢 Tin nhắn từ quản trị viên: Cảm ơn bạn đã tham gia thảo luận! Hãy đảm bảo ngôn từ phù hợp và chia sẻ chân thành nhé.
+  </div>
+
+  <h1>Thảo luận: Ám Sợ Chuyên Biệt</h1>
+
+  <div class="toggle-section">
+    <h3 onclick="toggleContent('info')">📌 Ẩn/Hiện Infographic</h3>
+    <div id="info" class="toggle-content">
+      <img src="3444846f-c34f-4693-afe4-b770a69b419e.png" alt="Infographic 1">
+      <img src="ec4dee0c-44eb-4549-a1c2-9619be8edc21.png" alt="Infographic 2">
+    </div>
+  </div>
+
+  <div class="toggle-section">
+    <h3 onclick="toggleContent('references')">📖 Ẩn/Hiện Tài liệu tham khảo</h3>
+    <div id="references" class="toggle-content reference-links">
+      <ul>
+        <li><a href="https://dictionary.apa.org/specific-phobia" target="_blank">Khái niệm</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5674525/" target="_blank">Bài báo nghiên cứu</a></li>
+        <li><a href="https://dn790004.ca.archive.org/0/items/APA-DSM-5/DSM5.pdf" target="_blank">Triệu chứng (trang 247/992)</a></li>
+        <li><a href="#">Điều trị (trang 48–49 – sách Hiểu hết về Tâm lý học, Hemmings)</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <input id="username" placeholder="Tên của bạn" />
+  <label><input type="checkbox" id="anonymous" /> Ẩn danh</label>
+  <textarea id="commentText" rows="4" placeholder="Nhập bình luận của bạn..."></textarea>
+  <button onclick="postComment()">💬 Gửi bình luận</button>
+
+  <div class="sort-options">
+    <label for="sortSelect">Sắp xếp theo: </label>
+    <select id="sortSelect" onchange="loadComments()">
+      <option value="recent">Mới nhất</option>
+      <option value="emotion">Lượt cảm xúc</option>
+    </select>
+  </div>
+
+  <div class="comment-section">
+    <h3>Tất cả bình luận:</h3>
+    <div id="comments"></div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      databaseURL: "https://specific-phobia-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let isAdmin = false;
+    const ADMIN_NAME = 'admin';
+    const ADMIN_PASS = 'matkhau123';
+
+    function toggleContent(id) {
+      const content = document.getElementById(id);
+      content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function formatTimestamp(ts) {
+      const d = new Date(ts);
+      return d.toLocaleString('vi-VN', {
+        hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    }
+
+    function getEmotionScore(c) {
+      return (c.likes || 0) + (c.hearts || 0) + (c.laughs || 0);
+    }
+
+    function loadComments() {
+      db.ref('comments').on('value', snapshot => {
+        renderComments(snapshot);
+      });
+    }
+
+    function renderComments(snapshot) {
+      const container = document.getElementById('comments');
+      const data = snapshot.val() || {};
+      const comments = Object.entries(data).map(([id, c]) => ({ ...c, id }));
+      const sortMode = document.getElementById('sortSelect')?.value || 'recent';
+      const sorted = comments.sort((a, b) => {
+        if ((b.pinned || 0) - (a.pinned || 0) !== 0) return (b.pinned || 0) - (a.pinned || 0);
+        if (sortMode === 'emotion') return getEmotionScore(b) - getEmotionScore(a);
+        return b.timestamp - a.timestamp;
+      });
+
+      container.innerHTML = '';
+      for (const comment of sorted) {
+        const div = document.createElement('div');
+        div.className = 'comment';
+        if (comment.pinned) div.classList.add('pinned');
+        div.innerHTML = `
+          <strong>${comment.name}</strong><br>${comment.text}<br>
+          <div class="timestamp">🕒 ${formatTimestamp(comment.timestamp)}</div>
+          <div class="comment-footer">
+            <button onclick="likeComment('${comment.id}')">👍 ${comment.likes || 0}</button>
+            <button onclick="emojiComment('${comment.id}', '❤️')">❤️ ${comment.hearts || 0}</button>
+            <button onclick="emojiComment('${comment.id}', '😂')">😂 ${comment.laughs || 0}</button>
+            ${isAdmin ? `<button onclick="pinComment('${comment.id}')">📌 Ghim</button>
+            <button onclick="deleteComment('${comment.id}')">❌ Xóa</button>` : ''}
+          </div>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    function postComment() {
+      const name = document.getElementById('anonymous').checked ? 'Ẩn danh' : (document.getElementById('username').value.trim() || 'Không tên');
+      const text = document.getElementById('commentText').value.trim();
+      if (!text) return alert('Vui lòng nhập nội dung bình luận.');
+      const newRef = db.ref('comments').push();
+      newRef.set({ name, text, timestamp: Date.now() });
+      document.getElementById('commentText').value = '';
+    }
+
+    function likeComment(id) {
+      const ref = db.ref(`comments/${id}/likes`);
+      ref.transaction(val => (val || 0) + 1);
+    }
+
+    function emojiComment(id, type) {
+      const field = type === '❤️' ? 'hearts' : 'laughs';
+      const ref = db.ref(`comments/${id}/${field}`);
+      ref.transaction(val => (val || 0) + 1);
+    }
+
+    function pinComment(id) {
+      const ref = db.ref(`comments/${id}/pinned`);
+      ref.transaction(val => !val);
+    }
+
+    function deleteComment(id) {
+      db.ref(`comments/${id}`).remove();
+    }
+
+    function promptAdmin() {
+      const name = prompt('Tên đăng nhập:');
+      const pass = prompt('Mật khẩu:');
+      if (name === ADMIN_NAME && pass === ADMIN_PASS) {
+        isAdmin = true;
+        alert('Đăng nhập quản trị thành công');
+        loadComments();
+      } else {
+        alert('Sai thông tin');
+      }
+    }
+
+    loadComments();
+  </script>
+</body>
+</html>
