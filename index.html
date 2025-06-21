@@ -120,6 +120,8 @@
 <body>
   <div class="admin-banner">
     📢 Tin nhắn từ quản trị viên: Cảm ơn bạn đã tham gia thảo luận! Hãy đảm bảo ngôn từ phù hợp và chia sẻ chân thành nhé.
+    <button onclick="promptAdmin()">🔐 Đăng nhập quản trị viên</button>
+    <button onclick="logoutAdmin()" id="adminLogout" style="display:none">🚪 Đăng xuất</button>
   </div>
 
   <h1>Thảo luận: Ám Sợ Chuyên Biệt</h1>
@@ -260,11 +262,19 @@
       const pass = prompt('Mật khẩu:');
       if (name === ADMIN_NAME && pass === ADMIN_PASS) {
         isAdmin = true;
+        document.getElementById('adminLogout').style.display = 'inline-block';
         alert('Đăng nhập quản trị thành công');
         loadComments();
       } else {
         alert('Sai thông tin');
       }
+    }
+
+    function logoutAdmin() {
+      isAdmin = false;
+      document.getElementById('adminLogout').style.display = 'none';
+      alert('Đã đăng xuất quản trị');
+      loadComments();
     }
 
     loadComments();
